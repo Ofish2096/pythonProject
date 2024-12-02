@@ -2,7 +2,7 @@ import traceback
 from datetime import datetime
 
 from flask import Flask, request, jsonify
-from flask_restx import Api, Resource, fields
+from flask_restx import Api, Resource, fields, marshal_with
 
 from FileMeneger import style
 from Models.alarm_model import AlarmModel
@@ -12,7 +12,7 @@ from myLogger import write_info_line, write_error_line
 
 # Initialize Flask app and Flask-RESTX API
 app = Flask(__name__)
-api = Api(app, version='1.0', title='My API', description='A simple demonstration of Flask-RESTX with Swagger')
+api = Api(app,version='1.0', title='My API', description='A simple demonstration of Flask-RESTX with Swagger')
 
 # Define the model for the alarm data in Swagger
 alarm_model = api.model('Alarm', {
@@ -23,52 +23,51 @@ alarm_model = api.model('Alarm', {
 })
 
 
+# Define the output model for alarms count
+alarms_count_model = api.model('AlarmsCount', {
+    'alarmsCount': fields.Integer(description='The total number of alarms', example=5)
+})
+
+
 # Home route
 @app.route('/')
 def home():
     return '<h1>Flash REST API</h1>'
 
-@api.route('/alarmsCount')  # Use @api.route() instead of @app.route()
-class AlarmsCout(Resource):
-    def get(self):
-        try:
-            my_dal = MysqlDal(True)
-            return my_dal.get_alarms_count(), 200
-        except Exception as e:
-            write_error_line(f"Error occurred: {str(e)}")
-            write_error_line("Traceback: ".join(traceback.format_exception(None, e, e.__traceback__)))
-            return {"error": "An error occurred while processing your request.", "message": str(e)}, 400
-
-
-# Alarms route - Get the list of alarms
-@api.route('/alarms')  # Use @api.route() instead of @app.route()
+@api.route('/alarms')  # This will handle the alarms listing
+@api.route('/alarmsCount')  # This will handle the alarms count
 class Alarms(Resource):
     def get(self):
         """
-        This endpoint returns a list of all alarms.
-        ---
-        responses:
-          200:
-            description: A list of alarms
-            content:
-              application/json:
-                schema:
-                  type: array
-                  items:
-                    $ref: '#/components/schemas/Alarm'  # Link to the alarm_model
-          400:
-            description: Bad Request
+        Get the list of alarms when accessed through /alarms
+        Or get the count of alarms when accessed through /alarmsCount
         """
-        try:
-            write_info_line(f"{style.BLUE} get alarms() {style.GREEN}")
-            my_dal = MysqlDal(True)
-            alarms = my_dal.get_alarms()
-            return convert_alarm_list_to_json(alarms)
-        except Exception as e:
-            write_error_line(f"Error occurred: {str(e)}")
-            write_error_line("".join(traceback.format_exception(None, e, e.__traceback__)))
-            return {"error": "An error occurred while processing your request.", "message": str(e)}, 400
-
+        if request.path == '/alarms':
+            # Logic for returning the list of alarms
+            try:
+                write_info_line(f"{style.BLUE} get alarms() {style.GREEN}")
+                my_dal = MysqlDal(True)
+                alarms = my_dal.get_alarms()
+                return convert_alarm_list_to_json(alarms)  # assuming this method is correct
+            except Exception as e:
+                write_error_line(f"Error occurred: {str(e)}")
+                write_error_line("".join(traceback.format_exception(None, e, e.__traceback__)))
+                return jsonify({"error": "An error occurred while processing your request.", "message": str(e)}), 400
+        elif request.path == '/alarmsCount':
+            # Logic for returning the count of alarms
+            try:
+                my_dal = MysqlDal(True)
+                alarms_count = my_dal.get_alarms_count()  # assuming this method is correct
+                write_info_line(f"alarms_count = {alarms_count}")
+                # Check the type of alarms_count
+                if not isinstance(alarms_count, (int, float)):
+                    write_error_line(f"alarms_count is not a number! It is of type: {type(alarms_count)}")
+                    return jsonify({"error": "alarms_count is not a valid number"}), 400
+                return alarms_count, 200
+            except Exception as e:
+                write_error_line(f"Error occurred: {str(e)}")
+                write_error_line("Traceback: ".join(traceback.format_exception(None, e, e.__traceback__)))
+                return jsonify({"error": "An error occurred while processing your request.", "message": str(e)}), 400
 
 # Define a model for Insert an alarm into the database
 alarm_i_model = api.model('insertalarm', {

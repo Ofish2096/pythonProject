@@ -129,7 +129,7 @@ class MysqlDal:
         finally:
             self.__disconnect_to_db()
             write_info_line(f"Call get_alarms_count done")
-
+        return 0
 
     # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
     def get_alarms(self):

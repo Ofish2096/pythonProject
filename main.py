@@ -65,6 +65,6 @@ if __name__ == '__main__':
     write_info_line(f"__name__ == '__main__':")
     t1 = threading.Thread(target=simulate_alarms_task, args=(10,))
     t1.start()
-    routs = routes.app.run(host='0.0.0.0', port=5000,debug=True)
+    routs = routes.app.run(host='0.0.0.0', port=5000)
     #routs = routes.app.run(debug=False)
 
