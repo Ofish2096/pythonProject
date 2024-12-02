@@ -28,6 +28,17 @@ alarm_model = api.model('Alarm', {
 def home():
     return '<h1>Flash REST API</h1>'
 
+@api.route('/alarmsCount')  # Use @api.route() instead of @app.route()
+class AlarmsCout(Resource):
+    def get(self):
+        try:
+            my_dal = MysqlDal(True)
+            return my_dal.get_alarms_count(), 200
+        except Exception as e:
+            write_error_line(f"Error occurred: {str(e)}")
+            write_error_line("Traceback: ".join(traceback.format_exception(None, e, e.__traceback__)))
+            return {"error": "An error occurred while processing your request.", "message": str(e)}, 400
+
 
 # Alarms route - Get the list of alarms
 @api.route('/alarms')  # Use @api.route() instead of @app.route()

@@ -8,6 +8,9 @@ from myLogger import write_info_line
 def convert_alarm_list_to_json(alarm_last):
     alarms_res = []
     try:
+
+        alarm_h = {"AlarmCount": len(alarm_last)}
+        alarms_res.append(alarm_h)
         for alarm in alarm_last:
             alarm_dict = {
                 "id": alarm.id,

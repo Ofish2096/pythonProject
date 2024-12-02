@@ -115,6 +115,22 @@ class MysqlDal:
         finally:
             self.__disconnect_to_db()
 
+    def get_alarms_count(self):
+        try:
+            write_info_line(f"Call get_alarms_count")
+            self.__connect_to_db()
+            cursor = self.connection.cursor()
+            cursor.execute("SELECT count(alarm_id) FROM vms.alarms")
+            result = cursor.fetchone()
+            cursor.close()
+            return result[0]
+        except Exception as e:
+            write_error_line(e)
+        finally:
+            self.__disconnect_to_db()
+            write_info_line(f"Call get_alarms_count done")
+
+
     # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
     def get_alarms(self):
         try:
