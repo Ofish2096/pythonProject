@@ -26,14 +26,16 @@ def read_line_from_file(file_path, line_number):
 
         write_info_line(f"Current directory: {current_directory}")
         full_path = os.path.join(current_directory, file_path)
+        write_info_line(f"Current directory: {full_path}")
+
         line = "🍕"
-        encoding = detect_encoding(file_path)
+        encoding = detect_encoding(full_path)
 
 
 
 
-        write_info_line(f"try open {file_path}")
-        with open(file_path, 'r', encoding=encoding) as file:
+        write_info_line(f"try open {full_path}")
+        with open(full_path, 'r', encoding=encoding) as file:
             lines = enumerate(file, start=1)
             for current_line_number,line in lines: # line in enumerate(file, start=1):
                 if current_line_number == line_number:
