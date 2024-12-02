@@ -1,0 +1,9 @@
+install the network
+ docker network create my_network
+
+ install mysql
+  docker run --name mysql-container --network my_network -e MYSQL_ROOT_PASSWORD=pulse -p 3333:3306 mysql:latest
+
+install my imadge
+docker build -t my-python-microservice .
+docker run --name my-python-container --network my_network my-python-microservice
